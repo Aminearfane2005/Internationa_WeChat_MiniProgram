@@ -1,0 +1,269 @@
+/**
+ * COMMUNITY STYLESHEET - REWRITTEN
+ * Includes: Monthly Legend UI, Layout Fixes, and Interaction Styling
+ */
+
+ .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 88rpx;
+    background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+    display: flex;
+    align-items: center;
+    padding: 0 30rpx;
+    z-index: 1000;
+  }
+  
+  
+
+/* 1. GLOBAL RESET & BASE LAYOUT */
+page {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8f9fe;
+  color: #2d3436;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2. NAVIGATION BAR */
+.custom-nav {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1rpx solid rgba(0,0,0,0.05);
+  z-index: 100;
+}
+
+.nav-content {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40rpx;
+}
+
+.brand-text {
+  font-size: 44rpx;
+  font-weight: 800;
+  letter-spacing: -1rpx;
+  background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 3. SCROLL AREA FIXES */
+.feed-scroll {
+  flex-grow: 1;
+  height: 0; 
+  width: 100%;
+}
+
+/* 4. CREATOR CARD (POST INPUT) */
+.creator-card {
+  background: #ffffff;
+  margin: 30rpx;
+  padding: 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.05);
+}
+
+.creator-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.my-ava {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  border: 4rpx solid #fff;
+}
+
+.my-name {
+  margin-left: 20rpx;
+  font-weight: 600;
+  font-size: 28rpx;
+  color: #636e72;
+}
+
+.post-input {
+  width: 100%;
+  font-size: 32rpx;
+  line-height: 1.6;
+  min-height: 100rpx;
+}
+
+.creator-toolbar {
+  display: flex;
+  align-items: center;
+  margin-top: 30rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f1f2f6;
+}
+
+.submit-btn {
+  background: #dfe6e9;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  padding: 0 40rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+}
+
+.submit-btn.active {
+  background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);
+}
+
+/* 5. POST CARDS & FEED */
+.post-card {
+  background: #ffffff;
+  margin: 0 30rpx 30rpx 30rpx;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  position: relative;
+  overflow: hidden; /* Important for the Ribbon */
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.u-info { display: flex; justify-content: space-between; align-items: flex-start; }
+.u-left { display: flex; align-items: center; }
+
+/* Fixed Avatar Sizes to prevent "Giant Avatar" bug */
+.u-ava { 
+  width: 90rpx; 
+  height: 90rpx; 
+  border-radius: 30rpx; 
+  background: #f1f2f6;
+  flex-shrink: 0;
+}
+
+.u-meta { margin-left: 20rpx; }
+.u-name { font-weight: 700; font-size: 30rpx; display: block; margin-bottom: 4rpx; }
+.u-time { font-size: 22rpx; color: #b2bec3; display: block; }
+
+.post-content-text {
+  display: block;
+  font-size: 30rpx;
+  line-height: 1.6;
+  margin: 24rpx 0;
+  color: #2d3436;
+}
+
+/* 6. MONTHLY LEGEND DESIGN (The Request) */
+.winner-glow {
+  border: 4rpx solid transparent !important;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #f1c40f, #e67e22) !important;
+  background-origin: border-box !important;
+  background-clip: content-box, border-box !important;
+  box-shadow: 0 15rpx 40rpx rgba(241, 196, 15, 0.3) !important;
+}
+
+.gold-name {
+  background: linear-gradient(45deg, #d4af37, #f1c40f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800 !important;
+}
+
+.ribbon {
+  position: absolute;
+  top: 15rpx;
+  right: -55rpx;
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  transform: rotate(45deg);
+  width: 220rpx;
+  text-align: center;
+  color: white;
+  font-size: 18rpx;
+  font-weight: 900;
+  padding: 8rpx 0;
+  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+/* 7. MEDIA & INTERACTION */
+.media-grid {
+  display: grid;
+  gap: 12rpx;
+  margin: 20rpx 0;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.grid-1 image { width: 100%; height: 400rpx; border-radius: 16rpx; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-2 image { height: 280rpx; width: 100%; }
+
+.interact-row {
+  display: flex;
+  margin-top: 30rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f8f9fa;
+}
+
+.inter-item {
+  display: flex;
+  align-items: center;
+  margin-right: 40rpx;
+  font-size: 26rpx;
+  color: #636e72;
+}
+
+.icon-box {
+  width: 60rpx;
+  height: 60rpx;
+  background: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12rpx;
+}
+
+.liked .i-count { color: #e74c3c; font-weight: bold; }
+
+/* 8. MODAL STYLING */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.modal-overlay.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.modal-sheet {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 40rpx 40rpx 0 0;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.sheet-input {
+  width: 100%;
+  background: #f1f2f6;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  height: 200rpx;
+  margin-bottom: 30rpx;
+}

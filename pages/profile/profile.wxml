@@ -1,0 +1,154 @@
+
+
+<view class="app-shell">
+  <view class="nav-blur" style="padding-top: {{statusBarHeight}}px">
+    <view class="nav-content">
+      <view class="user-block">
+        <view class="avatar-ring">
+          <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+          <view class="status-glow"></view>
+        </view>
+        <view class="user-info">
+          <view class="name-flex">
+            <text class="u-name">{{userInfo.nickName}}</text>
+            <view class="legend-chip" wx:if="{{isMonthlyWinner}}">
+              <text>🏆 LEGEND</text>
+            </view>
+          </view>
+          <text class="u-id">Member.{{openidShort || '88420'}}</text>
+        </view>
+      </view>
+      
+      <button class="cs-action-pill" bindtap="goToSupport">
+  <view class="cs-pulse"></view>
+  <text>Support</text>
+</button>
+    </view>
+
+    <view class="tab-slider">
+      <view wx:for="{{tabs}}" wx:key="id" 
+            class="tab-node {{activeTab === item.id ? 'is-active' : ''}}" 
+            bindtap="switchTab" data-tab="{{item.id}}">
+        <text class="tab-text">{{item.title}}</text>
+        <view class="tab-underline" wx:if="{{activeTab === item.id}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view 
+    scroll-y 
+    class="scroll-engine" 
+    enhanced="{{true}}" 
+    show-scrollbar="{{false}}"
+    bounces="{{true}}"
+  >
+    <view class="bento-grid">
+      <view class="bento-tile tall">
+        <text class="b-val">{{stats.postCount}}</text>
+        <text class="b-lab">My Pulse</text>
+        <view class="bento-deco circle"></view>
+      </view>
+      <view class="bento-tile wide">
+        <text class="b-val">{{stats.likes}}</text>
+        <text class="b-lab">Influence</text>
+        <view class="bento-deco line"></view>
+      </view>
+      <view class="bento-tile">
+        <text class="b-val">{{myProducts.length}}</text>
+        <text class="b-lab">Products</text>
+      </view>
+    </view>
+
+    <view class="feed-container">
+      <block wx:if="{{activeTab === 'community'}}">
+        <view class="feed-item-card" wx:for="{{myPosts}}" wx:key="_id">
+          <view class="f-header">
+            <image class="f-ava" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+            <view class="f-meta">
+              <text class="f-name">{{userInfo.nickName}}</text>
+              <text class="f-time">{{item.dateDisplay}}</text>
+            </view>
+            <view class="f-options">•••</view>
+          </view>
+
+          <view class="f-body">
+            <text class="f-content">{{item.content}}</text>
+            <view class="f-gallery g-{{item.images.length}}" wx:if="{{item.images.length > 0}}">
+              <image wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" 
+                     src="{{img}}" mode="aspectFill" />
+            </view>
+          </view>
+
+          <view class="f-footer">
+            <view class="f-actions">
+              <view class="action-node">
+                <text class="node-icon">❤️</text>
+                <text class="node-count">{{item.likes || 0}}</text>
+              </view>
+              <view class="action-node">
+                <text class="node-icon">💬</text>
+                <text class="node-count">{{item.commentCount || 0}}</text>
+              </view>
+            </view>
+            <button class="f-share-btn" open-type="share">
+              <text>🔗</text>
+            </button>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{activeTab === 'travel'}}">
+        <view class="passport-card" wx:for="{{myTravel}}" wx:key="_id">
+          <view class="passport-stamp">
+            <text class="stamp-month">{{item.goDate}}</text>
+          </view>
+          <view class="passport-details">
+            <view class="p-top">
+              <text class="p-dest">📍 {{item.dest}}</text>
+              <text class="p-tag">ACTIVE</text>
+            </view>
+            <text class="p-desc">{{item.duration}} Days • Seeking {{item.spots}}</text>
+            <view class="p-manage-row">
+              <text class="p-edit">Edit Trip</text>
+              <text class="p-del">Remove</text>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{activeTab === 'secondHand'}}">
+  <view class="market-grid">
+    <view class="market-card" wx:for="{{myProducts}}" wx:key="_id">
+      <view class="market-media">
+        <image class="market-img" src="{{item.image}}" mode="aspectFill" />
+        <view class="market-badge {{item.status === 'completed' ? 'is-sold' : 'is-available'}}">
+          {{item.status === 'completed' ? 'SOLD' : 'AVAILABLE'}}
+        </view>
+        <view class="market-glass-action">
+          <text>✨</text>
+        </view>
+      </view>
+      
+      <view class="market-content">
+        <text class="market-title">{{item.title}}</text>
+        <view class="market-price-row">
+          <text class="market-currency">¥</text>
+          <text class="market-price-val">{{item.price}}</text>
+          <view class="market-condition-tag">Mint</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</block>
+
+      <view class="empty-vibes" wx:if="{{currentListData.length === 0}}">
+        <view class="empty-orb"></view>
+        <text class="empty-h">No Signal Found</text>
+        <text class="empty-p">Your digital footprint is empty here.</text>
+      </view>
+
+      <view class="scroll-finish-spacer"></view>
+    </view>
+  </scroll-view>
+</view>
+<tab-bar/>

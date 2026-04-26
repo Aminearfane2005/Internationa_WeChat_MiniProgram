@@ -1,0 +1,68 @@
+{
+   
+    "pages": [
+      "pages/index/index",
+      "pages/home/home",
+      "pages/travel/travel",
+      "pages/secondHand/secondHand",
+      "pages/createTravel/createTravel",
+      "pages/community/community",
+      "pages/house/house",
+      "pages/sharing/sharing",
+      "pages/profile/profile",
+      "pages/admin/admin",
+      "pages/support/support"
+    ],
+    "window": {
+      "backgroundTextStyle": "light",
+      "navigationBarBackgroundColor": "#fff",
+      "navigationBarTitleText": "My App",
+      "navigationBarTextStyle": "black",
+      "navigationStyle": "custom",
+      "navigationBarTextStyle": "white"
+   
+    },
+    "tabBar": {
+      "custom": true,
+      "color": "#999999",
+      "selectedColor": "#0284c7",
+      "backgroundColor": "#ffffff",
+      "borderStyle": "black",
+      "list": [
+        {
+          "pagePath": "pages/index/index",
+          "text": "Home"
+        },
+        {
+          "pagePath": "pages/admin/admin",
+          "text": "Admin"
+        },
+        {
+          "pagePath": "pages/profile/profile",
+          "text": "Profile"
+        }
+      ]
+    },
+    
+    "style": "v2",
+    "renderer": "skyline",
+    "rendererOptions": {
+      "skyline": {
+        "defaultDisplayBlock": true,
+        "defaultContentBox": true,
+        "tagNameStyleIsolation": "legacy",
+        "disableABTest": true,
+        "sdkVersionBegin": "3.0.0",
+        "sdkVersionEnd": "15.255.255"
+      }
+    },
+    "componentFramework": "glass-easel",
+    "sitemapLocation": "sitemap.json",
+    "lazyCodeLoading": "requiredComponents",
+
+    
+        "window": {
+         
+        }
+      
+  }

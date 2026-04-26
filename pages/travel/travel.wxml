@@ -1,0 +1,278 @@
+<view class="container">
+
+<!-- FIXED HEADER -->
+<view class="fixed-header">
+  
+  <!-- Banner -->
+  <view class="travel-banner">
+    <view class="banner-content">
+      <text class="banner-title">Propose City to Travel</text>
+      <text class="banner-subtitle">Share your travel destination ideas</text>
+    </view>
+  </view>
+  
+  <!-- Search -->
+  <view class="search-box">
+    <text class="iconfont">🔍</text>
+    <input 
+      placeholder="Search destinations..." 
+      value="{{searchKeyword}}"
+      bindinput="onSearchInput" 
+      bindconfirm="onSearch"
+      confirm-type="search"
+    />
+    <text wx:if="{{searchKeyword}}" class="clear-search" catchtap="clearSearch">✕</text>
+  </view>
+  
+  <!-- Search Suggestions -->
+  <view wx:if="{{searchKeyword && citySuggestions.length > 0}}" class="search-suggestions">
+    <view 
+      wx:for="{{citySuggestions}}" 
+      wx:key="*this"
+      class="suggestion-item"
+      catchtap="selectSuggestion"
+      data-city="{{item}}">
+      <text class="suggestion-icon">📍</text>
+      <text class="suggestion-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- City Tabs -->
+  <view class="city-tabs-wrapper">
+    <scroll-view scroll-x class="city-tabs-scroll" scroll-with-animation>
+      <view class="city-tabs-container">
+        <button class="city-btn {{activeCity === 'All' ? 'active' : ''}}" bindtap="onCityTap" data-city="All">All</button>
+        <button class="city-btn {{activeCity === 'Beijing' ? 'active' : ''}}" bindtap="onCityTap" data-city="Beijing">Beijing</button>
+        <button class="city-btn {{activeCity === 'Shanghai' ? 'active' : ''}}" bindtap="onCityTap" data-city="Shanghai">Shanghai</button>
+        <button class="city-btn {{activeCity === 'XiAn' ? 'active' : ''}}" bindtap="onCityTap" data-city="XiAn">Xi'an</button>
+        <button class="city-btn {{activeCity === 'Yunnan' ? 'active' : ''}}" bindtap="onCityTap" data-city="Yunnan">Yunnan</button>
+        <button class="city-btn {{activeCity === 'Chengdu' ? 'active' : ''}}" bindtap="onCityTap" data-city="Chengdu">Chengdu</button>
+        <button class="city-btn {{activeCity === 'Hangzhou' ? 'active' : ''}}" bindtap="onCityTap" data-city="Hangzhou">Hangzhou</button>
+        <button class="city-btn other {{activeCity === 'Other' ? 'active' : ''}}" bindtap="onOtherCityTap">+ Other</button>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Custom City Input -->
+  <view wx:if="{{showOtherInput}}" class="other-city-box">
+    <input 
+      placeholder="Enter city name..." 
+      value="{{customCity}}" 
+      bindinput="onCustomCityInput" 
+      bindconfirm="onCustomCityConfirm"
+      confirm-type="send"
+    />
+    <button class="confirm-btn" bindtap="onCustomCityConfirm">OK</button>
+  </view>
+
+  <!-- Filter Chips -->
+  <view class="filter-chips">
+    <button class="chip {{activeFilter === 'All' ? 'active' : ''}}" bindtap="selectFilter" data-filter="All">All</button>
+    <button class="chip {{activeFilter === 'This Week' ? 'active' : ''}}" bindtap="selectFilter" data-filter="This Week">This Week</button>
+    <button class="chip {{activeFilter === 'This Month' ? 'active' : ''}}" bindtap="selectFilter" data-filter="This Month">This Month</button>
+  </view>
+  
+</view>
+
+<!-- SCROLLABLE CONTENT -->
+<scroll-view
+  scroll-y
+  class="page-scroll"
+  refresher-enabled
+  refresher-triggered="{{isRefreshing}}"
+  bindrefresherrefresh="onRefresh"
+  enhanced
+  show-scrollbar
+  bounces
+  scroll-with-animation>
+  
+  <!-- Post List -->
+  <view class="post-list">
+    <block wx:for="{{list}}" wx:key="_id">
+      <view class="post-card" bindtap="goDetail" data-id="{{item._id || item.id}}">
+        
+        <!-- Post Header -->
+               <!-- Post Header -->
+               <view class="post-header">
+          <view class="user-info">
+            <image class="user-avatar" src="{{item.avatar}}" mode="aspectFill" lazy-load/>
+            <text class="user-name">{{item.name}}</text>
+          </view>
+          
+          <!-- 3-Dots Menu (only for owner) -->
+          <view class="post-menu-wrapper" wx:if="{{item.isOwner}}">
+            <view class="menu-dots-btn" catchtap="showPostOptions" data-id="{{item._id || item.id}}">
+              <text class="dots-icon">⋮</text>
+            </view>
+          </view>
+          
+          <text class="post-time" wx:if="{{!item.isOwner}}">{{item.displayTime}}</text>
+        </view>
+        <!-- Post Title -->
+        <text class="post-title">{{item.subtitle}}</text>
+        
+        <!-- Post Description (300 char limit) -->
+        <text class="post-desc">{{item.desc}}</text>
+
+        <!-- Images: Only show if valid URLs exist, max 4 -->
+        <block wx:if="{{item.hasValidImages && item.images.length > 0}}">
+          
+          <!-- Single Image -->
+          <block wx:if="{{item.images.length === 1}}">
+            <view class="post-image-single" catchtap="previewImage" data-urls="{{item.images}}" data-current="{{item.images[0]}}">
+              <image 
+                src="{{item.images[0]}}" 
+                mode="aspectFill" 
+                lazy-load
+                binderror="onImageError"/>
+            </view>
+          </block>
+
+          <!-- Multiple Images Grid (2-4 images) -->
+          <block wx:elif="{{item.images.length > 1}}">
+            <view class="post-images-grid {{item.images.length === 2 ? 'grid-2' : item.images.length === 3 ? 'grid-3' : 'grid-4'}}">
+              <view 
+                class="post-image-item" 
+                wx:for="{{item.images}}" 
+                wx:for-item="img"
+                wx:for-index="idx"
+                wx:key="*this"
+                wx:if="{{idx < 4}}">
+                <image 
+                  src="{{img}}" 
+                  mode="aspectFill" 
+                  lazy-load
+                  binderror="onImageError"
+                  catchtap="previewImage" 
+                  data-urls="{{item.images}}" 
+                  data-current="{{img}}"/>
+              </view>
+            </view>
+          </block>
+          
+        </block>
+
+        <!-- Post Footer (FIXED: edit/delete moved inside) -->
+        <view class="post-footer">
+          <view class="post-info">
+            <view class="info-item">
+              <text class="info-icon">📍</text>
+              <text class="info-text">{{item.dest}}</text>
+            </view>
+            <view class="info-item">
+              <text class="info-icon">📅</text>
+              <text class="info-text">{{item.goDate}}</text>
+            </view>
+            <view class="info-item spots">
+              <text class="info-icon">👥</text>
+              <text class="info-text">{{item.spots}} spot{{item.spots > 1 ? 's' : ''}}</text>
+            </view>
+          </view>
+
+          <!-- Like & Comment Actions -->
+          <view class="post-actions">
+            <view class="action-btn {{item.isLiked ? 'liked' : ''}}" catchtap="onLike" data-id="{{item._id || item.id}}">
+              <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
+              <text class="action-num" wx:if="{{item.likes > 0}}">{{item.likes}}</text>
+            </view>
+            
+            <view class="action-btn comment-btn" catchtap="openComments" data-id="{{item._id || item.id}}">
+              <text class="action-icon">💬</text>
+              <text class="action-num" wx:if="{{item.comments > 0}}">{{item.comments}}</text>
+            </view>
+          </view>
+
+        
+        </view>
+
+      </view>
+    </block>
+
+    <!-- Empty State -->
+    <view wx:if="{{list.length === 0}}" class="empty-state">
+      <text class="empty-text">No posts found</text>
+      <button class="create-first-btn" bindtap="creatpost">Create First Post</button>
+    </view>
+    
+    <view style="height: 200rpx;"></view>
+  </view>
+  
+</scroll-view>
+
+<!-- FAB -->
+<view class="fab-wrapper">
+  <view class="fab-menu {{showPostMenu ? 'show' : ''}}">
+    <view class="menu-item" catchtap="openTravelForm">
+      <text>✈️ Travel Post</text>
+    </view>
+  </view>
+  <view class="fab-button {{showPostMenu ? 'active' : ''}}" catchtap="togglePostMenu">
+    <text class="fab-icon">{{showPostMenu ? '✕' : '+'}}</text>
+  </view>
+</view>
+
+<!-- Comment Popup -->
+<view wx:if="{{showCommentPopup}}" class="comment-overlay" catchtap="closeComments">
+  <view class="comment-popup" catchtap="stopBubble">
+    <view class="comment-header">
+      <text class="comment-title">Comments ({{currentPost.comments || 0}})</text>
+      <text class="comment-close" catchtap="closeComments">✕</text>
+    </view>
+    <scroll-view scroll-y class="comment-list">
+      <view wx:if="{{currentPost.commentList && currentPost.commentList.length > 0}}">
+        <view wx:for="{{currentPost.commentList}}" wx:key="id" class="comment-item">
+          <image class="comment-avatar" src="{{item.avatar}}" mode="aspectFill" lazy-load/>
+          <view class="comment-content">
+            <text class="comment-name">{{item.name}}</text>
+            <text class="comment-text">{{item.content}}</text>
+            <text class="comment-time">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="comment-empty">
+        <text>No comments yet. Be the first!</text>
+      </view>
+    </scroll-view>
+    <view class="comment-input-area">
+      <input 
+        class="comment-input"
+        placeholder="Add a comment..."
+        value="{{commentText}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="submitComment"
+      />
+      <button class="comment-send" catchtap="submitComment">Send</button>
+    </view>
+  </view>
+</view>
+
+<!-- Delete Confirmation Popup -->
+<view wx:if="{{showDeletePopup}}" class="delete-overlay" catchtap="hideDeletePopup">
+  <view class="delete-popup" catchtap="stopBubble">
+    <view class="delete-title">Delete Post</view>
+    <view class="delete-message">
+      Are you sure you want to delete "{{postToDelete.title}}"? This action cannot be undone.
+    </view>
+    <view class="delete-actions">
+      <button class="delete-cancel" catchtap="cancelDelete">Cancel</button>
+      <button class="delete-confirm" catchtap="confirmDelete">Delete</button>
+    </view>
+  </view>
+</view>
+<!-- Post Options Popup (Edit/Delete) -->
+<view wx:if="{{showPostOptions}}" class="post-options-overlay" catchtap="hidePostOptions">
+  <view class="post-options-popup" catchtap="stopBubble">
+    <view class="post-option-item edit-option" catchtap="editPost" data-id="{{selectedPostId}}">
+      <text class="option-icon">✏️</text>
+      <text class="option-text">Edit Post</text>
+    </view>
+    <view class="post-option-divider"></view>
+    <view class="post-option-item delete-option" catchtap="deletePost" data-id="{{selectedPostId}}">
+      <text class="option-icon">🗑️</text>
+      <text class="option-text delete-text">Delete Post</text>
+    </view>
+  </view>
+</view>
+<tab-bar />
+</view>

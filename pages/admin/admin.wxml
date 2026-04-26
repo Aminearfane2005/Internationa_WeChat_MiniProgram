@@ -1,0 +1,248 @@
+<view class="admin-page">
+  <!-- Login Screen -->
+ <!-- <view class="status-bar-placeholder" style="height: {{statusBarHeight}}px; background: #2c3e50;"></view>-->
+  
+  <view class="login-container" wx:if="{{!isAuthorized}}">
+    <view class="login-card">
+      <text class="login-title">Admin Access</text>
+      <input 
+        class="password-input"
+        password 
+        placeholder="Password" 
+        bindinput="onPasswordInput" 
+        value="{{inputPassword}}" 
+        confirm-type="done"
+        adjust-position="true"
+      />
+      <button class="login-btn" bindtap="checkLogin">Unlock Dashboard</button>
+    </view>
+  </view>
+  <!-- Main Admin Content -->
+  <block wx:else>
+    <!-- Navigation -->
+    <view class="admin-nav">
+      <view class="nav-item {{activeTab === 'products' ? 'active' : ''}}" bindtap="switchTab" data-tab="products">
+        Products ({{groups.length}})
+      </view>
+      <view class="nav-item {{activeTab === 'housing' ? 'active' : ''}}" bindtap="switchTab" data-tab="housing">
+        Housing ({{pendingHouses.length}})
+      </view>
+      <view class="nav-item {{activeTab === 'support' ? 'active' : ''}}" bindtap="switchTab" data-tab="support">
+        Support
+      </view>
+      <view class="logout-btn" bindtap="logout">Lock</view>
+    </view>
+
+ 
+    <!-- Support Tab -->
+    <scroll-view scroll-y class="admin-scroll" wx:if="{{activeTab === 'support'}}" scroll-into-view="{{lastMessageId}}" scroll-with-animation>
+      <view class="section-title">Support Messages</view>
+      <view class="admin-chat-list">
+        <block wx:for="{{messages}}" wx:key="_id">
+          <view id="msg-{{index}}" class="admin-msg-bubble {{item.isAdmin ? 'is-admin' : 'is-user'}}">
+            <view class="msg-header">
+              <text class="msg-user">{{item.isAdmin ? 'Me (Admin)' : 'User ID: ' + item._openid}}</text>
+              <text class="msg-time">{{item.timeDisplay}}</text>
+            </view>
+            <view class="msg-body">
+              <text>{{item.text}}</text>
+            </view>
+            <view class="admin-reply-row" wx:if="{{!item.isAdmin}}">
+              <input class="reply-input" placeholder="Type reply..." bindinput="onReplyInput" value="{{replyText}}" />
+              <button class="reply-btn" bindtap="sendReply" data-userid="{{item._openid}}">Reply</button>
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
+    <!-- Products Tab -->
+    <scroll-view scroll-y class="admin-scroll" wx:if="{{activeTab === 'products'}}">
+      
+      <!-- PAYMENT QR CODES SECTION -->
+      <view class="section-title">Payment QR Codes</view>
+      <view class="qr-section">
+        <!-- Tabs -->
+        <view class="qr-tabs">
+          <view class="qr-tab {{currentPaymentTab === 'wechat' ? 'active' : ''}}" bindtap="switchPaymentTab" data-tab="wechat">
+            <text>💬 WeChat</text>
+          </view>
+          <view class="qr-tab {{currentPaymentTab === 'alipay' ? 'active' : ''}}" bindtap="switchPaymentTab" data-tab="alipay">
+            <text>🔵 Alipay</text>
+          </view>
+        </view>
+        
+        <!-- QR Upload Area -->
+        <view class="qr-upload-box" bindtap="uploadAdminQR">
+          <block wx:if="{{currentPaymentTab === 'wechat' && adminWechatQR}}">
+            <image class="qr-image" src="{{adminWechatQR}}" mode="aspectFit" show-menu-by-longpress/>
+            <view class="qr-change-hint">Tap to change</view>
+          </block>
+          <block wx:elif="{{currentPaymentTab === 'alipay' && adminAlipayQR}}">
+            <image class="qr-image" src="{{adminAlipayQR}}" mode="aspectFit" show-menu-by-longpress/>
+            <view class="qr-change-hint">Tap to change</view>
+          </block>
+          <block wx:else>
+            <view class="qr-placeholder">
+              <text class="qr-icon">📷</text>
+              <text class="qr-text">Tap to upload {{currentPaymentTab === 'wechat' ? 'WeChat' : 'Alipay'}} QR Code</text>
+              <text class="qr-subtext">Buyers will scan this to pay you</text>
+            </view>
+          </block>
+        </view>
+        
+        <!-- Status -->
+        <view class="qr-status">
+          <text wx:if="{{currentPaymentTab === 'wechat' && adminWechatQR}}" class="status-set">✓ WeChat QR Set</text>
+          <text wx:elif="{{currentPaymentTab === 'wechat' && !adminWechatQR}}" class="status-missing">⚠ WeChat QR Not Set</text>
+          <text wx:elif="{{currentPaymentTab === 'alipay' && adminAlipayQR}}" class="status-set">✓ Alipay QR Set</text>
+          <text wx:elif="{{currentPaymentTab === 'alipay' && !adminAlipayQR}}" class="status-missing">⚠ Alipay QR Not Set</text>
+        </view>
+      </view>
+
+      <view class="section-title">Add New Product to Sharing Page</view>
+      
+      <!-- Product Form -->
+      <view class="form-card">
+        
+        <!-- Image Upload -->
+        <view class="image-upload-container" bindtap="chooseImage">
+          <block wx:if="{{productForm.productImage}}">
+            <image src="{{productForm.productImage}}" mode="aspectFill" style="width: 100%; height: 100%;"></image>
+          </block>
+          <block wx:else>
+            <view style="font-size: 60rpx; color: #999;">+</view>
+            <text style="font-size: 24rpx; color: #999;">Upload Product Photo</text>
+          </block>
+        </view>
+
+        <!-- Product Name -->
+        <view class="form-row">
+          <text class="form-label">Product Name *</text>
+          <input 
+            class="form-input" 
+            placeholder="Enter product name" 
+            bindinput="onProdInput" 
+            data-field="productName" 
+            value="{{productForm.productName}}" 
+          />
+        </view>
+
+        <!-- Category -->
+        <view class="form-row">
+          <text class="form-label">Category</text>
+          <picker bindchange="onCategoryChange" range="{{categoryNames}}">
+            <view class="form-picker">{{productForm.categoryName || 'Select Category'}}</view>
+          </picker>
+        </view>
+
+        <!-- Description -->
+        <view class="form-row">
+          <text class="form-label">Description</text>
+          <textarea 
+            class="form-textarea" 
+            placeholder="Enter product description" 
+            bindinput="onProdInput" 
+            data-field="description" 
+            value="{{productForm.description}}"
+          ></textarea>
+        </view>
+
+        <!-- Price fields -->
+        <view class="form-row">
+          <text class="form-label">Original Price (¥) *</text>
+          <input 
+            class="form-input" 
+            type="digit" 
+            placeholder="0.00" 
+            bindinput="onProdInput" 
+            data-field="originalPrice" 
+            value="{{productForm.originalPrice}}" 
+          />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">Group Price (¥) * <text style="font-size: 22rpx; color: #999; font-weight: normal;">(price buyers pay)</text></text>
+          <input 
+            class="form-input" 
+            type="digit" 
+            placeholder="0.00" 
+            bindinput="onProdInput" 
+            data-field="groupPrice" 
+            value="{{productForm.groupPrice}}" 
+          />
+        </view>
+
+        <!-- Target Members -->
+        <view class="form-row">
+          <text class="form-label">Target Members</text>
+          <input 
+            class="form-input" 
+            type="number" 
+            placeholder="10" 
+            bindinput="onProdInput" 
+            data-field="targetMembers" 
+            value="{{productForm.targetMembers}}" 
+          />
+        </view>
+
+        <!-- Publish Button -->
+        <button 
+          class="publish-btn" 
+          bindtap="submitProduct"
+          disabled="{{!productForm.productName || (!productForm.originalPrice && !productForm.groupPrice)}}"
+        >
+          Publish Product
+        </button>
+        
+        <!-- Debug info -->
+        <view wx:if="{{publishError}}" style="color: red; font-size: 24rpx; margin-top: 20rpx; text-align: center;">
+          {{publishError}}
+        </view>
+      </view>
+
+      <view class="section-title">Active Sharing Products</view>
+      <view class="product-card" wx:for="{{groups}}" wx:key="_id">
+        <image src="{{item.productImage}}" mode="aspectFill" class="product-image"></image>
+        <view class="product-info">
+          <view class="product-header">
+            <text class="product-name">{{item.productName}}</text>
+            <text class="product-price">
+              <block wx:if="{{item.groupPrice}}">¥{{item.groupPrice}}</block>
+              <block wx:elif="{{item.originalPrice}}">¥{{item.originalPrice}}</block>
+              <block wx:else>--</block>
+            </text>
+          </view>
+          <text class="product-desc">{{item.description}}</text>
+          <view class="product-meta">
+            <text class="category-badge">{{item.categoryName || 'General'}}</text>
+            <button class="remove-btn" bindtap="deleteProduct" data-id="{{item._id}}">Remove</button>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- Housing Tab -->
+    <scroll-view scroll-y class="admin-scroll" wx:if="{{activeTab === 'housing'}}">
+      <view class="section-title">New Rent Out Submissions</view>
+      <view class="order-card" wx:for="{{pendingHouses}}" wx:key="_id">
+        <view class="order-info">
+          <text class="item-title">Monthly: ¥{{item.price}}</text>
+          <text class="description-text">{{item.description}}</text>
+          <view class="private-info-box">
+            <text class="private-label">ADMIN PRIVATE DETAILS</text>
+            <text class="private-data">📞 Phone: {{item.phone || 'Not Provided'}}</text>
+            <text class="private-data">📍 Address: {{item.address || 'Not Provided'}}</text>
+          </view>
+        </view>
+        <scroll-view scroll-x class="house-img-row">
+          <image wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" class="mini-thumb" bindtap="previewImage" data-src="{{img}}" />
+        </scroll-view>
+      </view>
+    </scroll-view>
+
+   
+    
+  </block>
+  <tab-bar current="admin" bind:switch="onTabSwitch" />
+</view>

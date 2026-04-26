@@ -1,0 +1,74 @@
+<view class="page">
+  <view class="ambient one"></view>
+  <view class="ambient two"></view>
+
+  <view class="top-user glass">
+    <image class="top-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+    <view class="top-meta">
+      <text class="top-greeting">{{greeting}}</text>
+      <text class="top-name">{{userInfo.nickName}}</text>
+    </view>
+    
+  </view>
+
+  <view wx:if="{{isLoading}}" class="loading">Designing your personalized experience...</view>
+
+  <view wx:else class="home-scroll">
+    <view class="hero glass">
+      <view class="hero-badge">iAbroad Universe</view>
+      <text class="hero-title">Everything International Students Need, In One Place</text>
+      <text class="hero-subtitle">Travel, housing, shopping and social life - crafted for confidence and speed.</text>
+
+      
+
+    
+    </view>
+
+    <view class="section-head">
+      <text class="section-title">Core Experiences</text>
+      <text class="section-subtitle">Choose where you want to grow today</text>
+    </view>
+
+    <view class="feature-grid">
+      <view class="feature-card travel" bindtap="onCardTap" data-page="travel">
+        <text class="feature-icon">✈️</text>
+        <text class="feature-title">Travel Together</text>
+        <text class="feature-desc">Find trusted partners and build your next adventure.</text>
+      </view>
+
+      <view class="feature-card secondHand" bindtap="onCardTap" data-page="secondHand">
+        <text class="feature-icon">🛍️</text>
+        <text class="feature-title">2nd Hand Sell</text>
+        <text class="feature-desc">Great deals, low prices, fast meetups near campus.</text>
+      </view>
+
+      <view class="feature-card community" bindtap="onCardTap" data-page="community">
+        <text class="feature-icon">💬</text>
+        <text class="feature-title">Community</text>
+        <text class="feature-desc">Join groups, ask questions, and connect with peers.</text>
+      </view>
+
+      <view class="feature-card house" bindtap="onCardTap" data-page="house">
+        <text class="feature-icon">🏠</text>
+        <text class="feature-title">House Renting</text>
+        <text class="feature-desc">Verified listings with transparent details and pricing.</text>
+      </view>
+    </view>
+
+    <view class="highlight sharing" bindtap="onCardTap" data-page="sharing">
+      <view>
+        <text class="highlight-title">Smart Sharing Buy</text>
+        <text class="highlight-subtitle">Save more with group orders on essentials and daily needs.</text>
+      </view>
+      <view class="highlight-action">Join Now</view>
+    </view>
+
+    <view class="trust-strip glass">
+      <text class="trust-item">Secure Profiles</text>
+      <text class="trust-dot">•</text>
+      <text class="trust-item">Verified Listings</text>
+      <text class="trust-dot">•</text>
+      <text class="trust-item">Fast Matching</text>
+    </view>
+  </view>
+</view>

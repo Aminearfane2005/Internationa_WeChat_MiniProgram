@@ -1,0 +1,101 @@
+<view class="page">
+<view class="tabs">
+  <view
+    class="tab {{activeTab === 'view' ? 'active' : ''}}"
+    bindtap="switchTab"
+    data-tab="view"
+  >
+    🏠 View Houses
+  </view>
+
+  <view
+    class="tab {{activeTab === 'add' ? 'active' : ''}}"
+    bindtap="switchTab"
+    data-tab="add"
+  >
+    ➕ Rent Out
+  </view>
+</view>
+
+<scroll-view 
+  scroll-y 
+  wx:if="{{activeTab === 'view'}}" 
+  style="height: {{scrollHeight}}rpx;" 
+  class="house-list"
+>
+  <view class="house-card" wx:for="{{houses}}" wx:key="_id">
+    <swiper class="house-swiper" indicator-dots autoplay circular>
+      <swiper-item wx:for="{{item.images}}" wx:key="*this">
+        <image class="house-image" src="{{item}}" mode="aspectFill" />
+      </swiper-item>
+    </swiper>
+
+    <view class="price-tag">
+      ¥ {{item.price}} / month
+    </view>
+
+    <view class="house-info">
+      <text class="description">{{item.description}}</text>
+    </view>
+
+    <!-- FIXED: Changed from view to button with open-type="contact" -->
+    <button
+      class="contact-btn"
+      open-type="contact"
+      session-from="weapp|house_{{item._id}}"
+      data-id="{{item._id}}"
+    >
+      Contact Admin
+    </button>
+  </view>
+
+  <view wx:if="{{houses.length === 0}}" class="empty">
+    <text>No houses available right now 😕</text>
+  </view>
+
+  <view class="tab-bar-spacer"></view>
+</scroll-view>
+
+<scroll-view 
+  scroll-y 
+  wx:if="{{activeTab === 'add'}}" 
+  style="height: {{scrollHeight}}rpx;"
+>
+  <view class="add-section">
+    <view class="form-item">
+      <text class="label">House Images *</text>
+      <view class="image-picker" bindtap="chooseImages">
+        <text>+ Upload Images</text>
+        <text wx:if="{{images.length}}" class="count">{{images.length}} selected</text>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <text class="label">Price (¥ / month) *</text>
+      <input type="number" placeholder="e.g. 2500" bindinput="onPriceInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">Description *</text>
+      <textarea placeholder="Describe the house (no phone or address here)" maxlength="400" bindinput="onDescInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">Phone Number (Private)</text>
+      <input type="number" placeholder="Visible to admins only" bindinput="onPhoneInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">Full Address (Private)</text>
+      <textarea placeholder="Visible to admins only" bindinput="onAddressInput" />
+    </view>
+
+    <view class="submit-btn" bindtap="submitHouse">Submit for Review</view>
+
+    <text class="note">* Phone & address will not be shown publicly</text>
+
+
+  </view>
+</scroll-view>
+<tab-bar/>
+</view>

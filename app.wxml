@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="login-gateway" wx:if="{{!hasUserInfo && !isChecking}}">
+    <view class="glass-card">
+      <view class="logo-area">
+        <image class="app-logo" src="/pages/images/logo.png" mode="aspectFit" />
+        <view class="pulse-ring"></view>
+      </view>
+      <view class="text-content">
+        <text class="title">Campus Hub</text>
+        <text class="description">Your one-stop destination for travel, housing, and campus deals.</text>
+      </view>
+      <button class="connect-button" bindtap="handleConnect">
+        <image class="wechat-icon" src="/pages/images/wechat-white.png" />
+        <text>Connect with WeChat</text>
+      </button>
+    </view>
+  </view>
+
+  <view class="dashboard-content" wx:if="{{hasUserInfo}}">
+    <include src="home.wxml"/> 
+  </view>
+  <tab-bar  />
+</view>

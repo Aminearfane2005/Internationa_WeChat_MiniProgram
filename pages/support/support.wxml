@@ -1,0 +1,78 @@
+<!-- Fixed Header with Back Button -->
+<view class="fixed-header">
+  <view class="back-btn" bindtap="goHome">
+    <text class="back-icon">←</text>
+    <text class="back-text">Home</text>
+  </view>
+  <text class="page-title">Page Name</text>
+</view>
+
+<!-- Add padding to push content below header -->
+<view style="padding-top: 120rpx;">
+  <!-- Your existing content -->
+</view>
+
+<view class="app-shell">
+  <view class="chat-header-area">
+    <image 
+      class="header-banner" 
+      src="/pages/images/Gemini_Generated_Image_9hk7f39hk7f39hk7.png" 
+      mode="aspectFill" 
+    />
+    
+    <view class="nav-blur" style="padding-top: {{statusBarHeight}}px">
+      <view class="nav-content">
+        <view class="back-btn" bindtap="exitChat">
+          <text class="back-icon">✕</text>
+        </view>  
+        <view class="user-block">
+          <view class="avatar-ring">
+            <image class="user-avatar" src="{{isAdmin ? '/images/support-icon.png' : userInfo.avatarUrl}}" mode="aspectFill" />
+            <view class="status-glow"></view>
+          </view>
+          <view class="user-info">
+            <text class="u-name">{{isAdmin ? 'Legend Support' : 'Customer Service'}}</text>
+            <text class="u-id">Active Now</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view 
+    scroll-y 
+    class="chat-engine" 
+    scroll-into-view="{{lastMessageId}}"
+    scroll-with-animation
+    enhanced="{{true}}" 
+    show-scrollbar="{{false}}"
+  >
+    <view class="message-container">
+      <block wx:for="{{chatHistory}}" wx:key="_id">
+        <view id="msg-{{index}}" class="msg-row {{item.isAdmin ? 'is-admin' : 'is-user'}}">
+          <view class="msg-bubble">
+            <text class="msg-text">{{item.text}}</text>
+            <text class="msg-time">{{item.timeDisplay}}</text>
+          </view>
+        </view>
+      </block>
+      <view class="scroll-finish-spacer"></view>
+    </view>
+  </scroll-view>
+
+  <view class="input-shelf">
+    <view class="input-pill">
+      <input 
+        class="main-input" 
+        placeholder="Type a message..." 
+        value="{{inputMessage}}" 
+        bindinput="onInput"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+      />
+      <button class="send-btn" bindtap="sendMessage">
+        <text>↗️</text>
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,446 @@
+<view class="page-container platform-{{platform}}">
+  
+  <!-- HEADER -->
+  <view class="top-header">
+    <text class="app-title">shareBuy</text>
+  </view>
+
+  <!-- SEARCH SECTION - Simplified (no filter button) -->
+  <view class="search-section">
+    <!-- Collapsed State -->
+    <view class="search-collapsed" wx:if="{{!isSearchExpanded}}">
+      <view class="search-icon-only" bindtap="expandSearch">
+        <text class="s-icon-big">🔍</text>
+      </view>
+    </view>
+    
+    <!-- Expanded State -->
+    <view class="search-expanded" wx:if="{{isSearchExpanded}}">
+      <view class="search-input-wrap">
+        <text class="s-icon-small">🔍</text>
+        <input 
+          type="text" 
+          placeholder="Search products..." 
+          value="{{searchKeyword}}"
+          focus="{{isSearchExpanded}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearch"
+          bindblur="onSearchBlur"
+          placeholder-class="ph"
+        />
+        <view class="clear-btn" wx:if="{{searchKeyword}}" bindtap="clearSearch">
+          <text>×</text>
+        </view>
+      </view>
+      <view class="close-search" bindtap="collapseSearch">
+        <text>Cancel</text>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view 
+    class="main-scroll" 
+    scroll-y 
+    enhanced 
+    show-scrollbar="{{false}}"
+    refresher-enabled 
+    bindrefresherrefresh="onRefresh"
+  >
+    
+    <!-- NEWS -->
+    <view class="news-box">
+      <view class="news-pill">
+        <view class="n-icon-wrap">
+          <text class="n-icon">!</text>
+        </view>
+        <swiper class="n-scroll" vertical autoplay circular interval="3000" duration="500">
+          <swiper-item wx:for="{{newsList}}" wx:key="id">
+            <text class="n-txt">{{item.text}}</text>
+          </swiper-item>
+        </swiper>
+        <text class="n-arrow">></text>
+      </view>
+    </view>
+  
+    <!-- DEADLINE -->
+    <view class="dl-box">
+      <view class="dl-icon">🚚</view>
+      <view class="dl-mid">
+        <text class="dl-tit">Next Delivery</text>
+        <text class="dl-sub">Tomorrow 5:00 PM</text>
+      </view>
+      <view class="dl-time">{{globalCountdown}}</view>
+    </view>
+
+    <!-- PRODUCTS SECTION -->
+    <view class="prod-section">
+      
+      <!-- Header row -->
+      <view class="sec-head">
+        <view class="sec-left">
+          <text class="fire">🔥</text>
+          <text class="sec-tit">Hot Deals</text>
+        </view>
+        <view class="sec-tabs">
+          <text 
+            class="st {{activeTab === 'popular' ? 'active' : ''}}" 
+            bindtap="switchTab" 
+            data-tab="popular"
+          >
+            Popular
+          </text>
+          <text 
+            class="st {{activeTab === 'new' ? 'active' : ''}}" 
+            bindtap="switchTab" 
+            data-tab="new"
+          >
+            New
+          </text>
+        </view>
+      </view>
+
+      <!-- PRODUCT GRID -->
+      <view class="prod-grid">
+        
+        <!-- Empty State -->
+        <view class="empty" wx:if="{{filteredGroups.length === 0}}">
+          <text class="e-icon">📦</text>
+          <text>No products found</text>
+        </view>
+
+        <!-- Product Cards -->
+        <view class="p-card {{item.isExpired ? 'expired' : ''}}" wx:for="{{filteredGroups}}" wx:key="id" bindtap="showDescModal" data-id="{{item.id}}">
+          <!-- Image Section -->
+          <view class="p-img-wrap">
+            <block wx:if="{{item.productImage && !item.imageError}}">
+              <image 
+                class="p-img" 
+                src="{{item.productImage}}" 
+                mode="aspectFill" 
+                lazy-load 
+                binderror="onImageError" 
+                data-id="{{item.id}}" 
+                data-index="{{index}}"
+              />
+            </block>
+            <view class="p-fallback {{!item.productImage || item.imageError ? 'show' : ''}}">
+              <text class="fallback-icon">📷</text>
+              <text class="fallback-letter">{{item.productName ? item.productName[0] : '?'}}</text>
+            </view>
+            
+            <!-- Countdown Badge - Shows Sold Out when expired -->
+            <view class="time-badge {{item.isExpired ? 'expired' : ''}}" wx:if="{{item.deadlineCountdown}}">
+              <text class="time-icon" wx:if="{{!item.isExpired}}">⏱</text>
+              <text class="time-text">{{item.deadlineCountdown}}</text>
+            </view>
+            
+            <view class="p-badge hot" wx:if="{{item.endsToday && !item.isExpired}}">HOT</view>
+            <view class="p-edit" wx:if="{{isAdmin}}" catchtap="editProduct" data-id="{{item.id}}">✎</view>
+          </view>
+          
+          <!-- Body Section -->
+          <view class="p-body">
+            <text class="p-name">{{item.productName || 'Unnamed Product'}}</text>
+            
+            <view class="p-meta">
+              <text class="p-cat">{{item.category || 'General'}}</text>
+              <text class="dot" wx:if="{{item.location}}">•</text>
+              <text wx:if="{{item.location}}">📍 {{item.location}}</text>
+            </view>
+            
+            <view class="p-price">
+              <view class="p-stack">
+                <text class="p-cur {{item.isExpired ? 'expired' : ''}}" wx:if="{{item.groupPrice !== undefined && item.groupPrice !== null}}">
+                  ¥{{item.groupPrice}}
+                </text>
+                <text class="p-cur missing" wx:else>Price N/A</text>
+                <text class="p-old" wx:if="{{item.originalPrice && item.originalPrice > item.groupPrice && !item.isExpired}}">
+                  ¥{{item.originalPrice}}
+                </text>
+              </view>
+              <text class="p-disc" wx:if="{{item.discount && !item.isExpired}}">-{{item.discount}}%</text>
+            </view>
+
+            <view class="p-btns" wx:if="{{!isAdmin}}">
+              <button 
+                class="p-join {{item.isExpired || item.isFull ? 'expired' : ''}}" 
+                disabled="{{item.isExpired || item.isFull}}" 
+                catchtap="joinGroup" 
+                data-id="{{item.id}}"
+              >
+                {{item.isExpired ? 'Sold Out' : item.isFull ? 'Full' : 'Join'}}
+              </button>
+            </view>
+            
+            <view class="p-admin" wx:if="{{isAdmin}}">
+              <view class="adm-btn" catchtap="editProduct" data-id="{{item.id}}">Edit</view>
+              <view class="adm-btn del" catchtap="deleteProduct" data-id="{{item.id}}">Del</view>
+            </view>
+          </view>
+        </view>
+
+      </view>
+    </view>
+
+    <view class="bottom-pad"></view>
+  </scroll-view>
+
+  <!-- FAB -->
+  <view class="fab" wx:if="{{isAdmin}}" bindtap="showCreateModal">
+    <text>+</text>
+  </view>
+
+  <!-- Create Product Modal -->
+  <view class="modal {{showCreateModal ? 'show' : ''}}" bindtap="hideCreateModal">
+    <view class="m-sheet" catchtap="stopPropagation">
+      <view class="m-drag"></view>
+      <view class="m-head">
+        <text>{{editingProduct ? 'Edit' : 'New'}} Product</text>
+        <view class="m-close" bindtap="hideCreateModal">×</view>
+      </view>
+      
+      <scroll-view class="m-body" scroll-y>
+        <view class="m-upload" bindtap="chooseImage">
+          <image wx:if="{{productForm.productImage}}" src="{{productForm.productImage}}" mode="aspectFill"/>
+          <view wx:else class="m-up-empty">
+            <text>📷</text>
+            <text>Upload Product Image</text>
+          </view>
+        </view>
+
+        <view class="m-form">
+          <view class="m-inp">
+            <text>Name *</text>
+            <input placeholder="Product name" value="{{productForm.productName}}" data-field="productName" bindinput="onProductInput"/>
+          </view>
+          
+          <view class="m-inp">
+            <text>Category</text>
+            <picker mode="selector" range="{{categoryNames}}" bindchange="onCategoryChange">
+              <view class="m-pick">{{productForm.categoryName || 'Select'}}</view>
+            </picker>
+          </view>
+          
+          <view class="m-inp">
+            <text>Description</text>
+            <textarea placeholder="Details..." value="{{productForm.description}}" data-field="description" bindinput="onProductInput"/>
+          </view>
+          
+          <view class="m-row">
+            <view class="m-inp half">
+              <text>Original Price ¥</text>
+              <input type="digit" placeholder="0.00" value="{{productForm.originalPrice}}" data-field="originalPrice" bindinput="onProductInput"/>
+            </view>
+            <view class="m-inp half">
+              <text>Group Price ¥</text>
+              <input type="digit" placeholder="0.00" value="{{productForm.groupPrice}}" data-field="groupPrice" bindinput="onProductInput"/>
+            </view>
+          </view>
+          
+          <view class="m-row">
+            <view class="m-inp half">
+              <text>Target Members</text>
+              <input type="number" placeholder="10" value="{{productForm.targetMembers}}" data-field="targetMembers" bindinput="onProductInput"/>
+            </view>
+          </view>
+          
+          <view class="m-note">⏰ Auto-deadline: Tomorrow 5PM</view>
+        </view>
+      </scroll-view>
+      
+      <view class="m-foot">
+        <view class="m-btn can" bindtap="hideCreateModal">Cancel</view>
+        <view class="m-btn sav" bindtap="saveProduct">Save</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- PAYMENT MODAL -->
+  <view class="modal {{showPaymentModal ? 'show' : ''}}" bindtap="hidePaymentModal">
+    <view class="pay-sheet" catchtap="stopPropagation">
+      <view class="pay-drag"></view>
+      <view class="pay-head">
+        <text>Complete Payment</text>
+        <view class="pay-close" bindtap="hidePaymentModal">×</view>
+      </view>
+      
+      <scroll-view class="pay-body" scroll-y>
+        <!-- Product Info -->
+        <view class="pay-product">
+          <block wx:if="{{selectedGroup.productImage}}">
+            <image class="pay-img" src="{{selectedGroup.productImage}}" mode="aspectFill"/>
+          </block>
+          <view wx:else class="pay-img-fallback">
+            <text>{{selectedGroup.productName ? selectedGroup.productName[0] : '?'}}</text>
+          </view>
+          <view class="pay-info">
+            <text class="pay-name">{{selectedGroup.productName || 'Product'}}</text>
+            <text class="pay-price">¥{{selectedGroup.groupPrice || '0.00'}}</text>
+          </view>
+        </view>
+        
+        <!-- STEP 1: Buyer uploads their QR Code -->
+        <view class="qr-section buyer-qr">
+          <text class="section-title">1. Upload Your Payment QR Code</text>
+          <text class="section-subtitle">Admin will scan this to receive payment</text>
+          
+          <view class="qr-upload-box" bindtap="uploadBuyerQR">
+            <block wx:if="{{buyerQRCode}}">
+              <image class="qr-image" src="{{buyerQRCode}}" mode="aspectFit"/>
+              <view class="qr-overlay">Tap to change</view>
+            </block>
+            <view wx:else class="qr-placeholder">
+              <text class="qr-icon">📷</text>
+              <text>Tap to upload your WeChat/Alipay QR</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- OR Divider -->
+        <view class="or-divider">
+          <view class="line"></view>
+          <text>OR</text>
+          <view class="line"></view>
+        </view>
+        
+        <!-- STEP 2: Scan Admin's QR Code -->
+        <view class="qr-section admin-qr">
+          <text class="section-title">2. Scan Admin's QR Code</text>
+          <text class="section-subtitle">Scan to pay directly to admin</text>
+          
+          <!-- Payment Method Tabs -->
+          <view class="pay-method-tabs">
+            <view class="pay-tab {{paymentMethod === 'wechat' ? 'active' : ''}}" bindtap="switchPaymentMethod" data-method="wechat">
+              <text>💬 WeChat</text>
+            </view>
+            <view class="pay-tab {{paymentMethod === 'alipay' ? 'active' : ''}}" bindtap="switchPaymentMethod" data-method="alipay">
+              <text>🔵 Alipay</text>
+            </view>
+          </view>
+          
+          <!-- Admin QR Code Display -->
+          <view class="admin-qr-display">
+            <block wx:if="{{paymentMethod === 'wechat'}}">
+              <image 
+                class="qr-image large" 
+                src="{{adminWechatQR}}" 
+                mode="aspectFit" 
+                show-menu-by-longpress
+                binderror="onWechatQRError"
+              />
+              <text class="qr-hint" wx:if="{{adminWechatQR}}">Long press to save WeChat QR code</text>
+              <view class="qr-missing" wx:if="{{!adminWechatQR}}">
+                <text class="warning-icon">⚠️</text>
+                <text>WeChat QR not set</text>
+                <text class="sub">Contact admin</text>
+              </view>
+            </block>
+            
+            <block wx:if="{{paymentMethod === 'alipay'}}">
+              <image 
+                class="qr-image large" 
+                src="{{adminAlipayQR}}" 
+                mode="aspectFit" 
+                show-menu-by-longpress
+                binderror="onAlipayQRError"
+              />
+              <text class="qr-hint" wx:if="{{adminAlipayQR}}">Long press to save Alipay QR code</text>
+              <view class="qr-missing" wx:if="{{!adminAlipayQR}}">
+                <text class="warning-icon">⚠️</text>
+                <text>Alipay QR not set</text>
+                <text class="sub">Contact admin</text>
+              </view>
+            </block>
+          </view>
+        </view>
+        
+        <!-- Payment Form -->
+        <view class="pay-form">
+          <view class="pay-input-group">
+            <text>Your Name *</text>
+            <input placeholder="Enter your name" value="{{payerName}}" bindinput="onPayerNameInput"/>
+          </view>
+          
+          <view class="pay-input-group">
+            <text>Amount Paid *</text>
+            <input type="digit" placeholder="{{selectedGroup.groupPrice}}" value="{{paidAmount}}" bindinput="onPaidAmountInput"/>
+          </view>
+          
+          <view class="pay-input-group">
+            <text>Transaction ID (Optional)</text>
+            <input placeholder="Enter transaction ID" value="{{transactionId}}" bindinput="onTransactionIdInput"/>
+          </view>
+        </view>
+        
+        <view style="height: 1rpx;"></view>
+      </scroll-view>
+      
+      <view class="pay-foot">
+        <view class="pay-btn cancel" bindtap="hidePaymentModal">Cancel</view>
+        <view class="pay-btn confirm" bindtap="confirmPayment">Confirm Payment</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- DESCRIPTION MODAL -->
+  <view class="desc-modal {{showDescModal ? 'show' : ''}}" bindtap="hideDescModal">
+    <view class="desc-sheet" catchtap="stopPropagation">
+      <view class="desc-close" bindtap="hideDescModal">×</view>
+      
+      <block wx:if="{{descProduct.productImage}}">
+        <image class="desc-image" src="{{descProduct.productImage}}" mode="aspectFill"/>
+      </block>
+      <view wx:else class="desc-image-fallback">
+        <text class="desc-fallback-icon">📷</text>
+        <text class="desc-fallback-text">{{descProduct.productName ? descProduct.productName[0] : 'No Image'}}</text>
+      </view>
+      
+      <scroll-view scroll-y class="desc-scroll">
+        <view class="desc-content">
+          <view class="desc-price-row">
+            <text class="desc-current" wx:if="{{descProduct.groupPrice !== undefined}}">¥{{descProduct.groupPrice}}</text>
+            <text class="desc-current missing" wx:else>Price Not Set</text>
+          </view>
+          
+          <text class="desc-name">{{descProduct.productName || 'Unnamed Product'}}</text>
+          
+          <view class="desc-meta">
+            <text class="desc-cat">{{descProduct.categoryName || descProduct.category || 'General'}}</text>
+            <text class="desc-loc" wx:if="{{descProduct.location}}">📍 {{descProduct.location}}</text>
+            <text class="desc-loc" wx:else>📍 Campus</text>
+          </view>
+          
+          <view class="desc-box">
+            <text class="desc-label">Description</text>
+            <text class="desc-text">{{descProduct.description || 'No description available for this product.'}}</text>
+          </view>
+          
+          <view class="desc-seller">
+            <text>Sold by: {{descProduct.creatorName || 'Admin'}}</text>
+          </view>
+          
+          <view style="height: 120rpx;"></view>
+        </view>
+      </scroll-view>
+      
+      <view class="desc-bottom-full">
+        <view class="price-row">
+          <text class="final-label">Total</text>
+          <text class="final-price" wx:if="{{descProduct.groupPrice !== undefined}}">¥{{descProduct.groupPrice}}</text>
+          <text class="final-price missing" wx:else>--</text>
+        </view>
+        <button 
+          class="desc-buy-btn-wide" 
+          disabled="{{descProduct.isFull || descProduct.isExpired}}" 
+          bindtap="buyFromDesc"
+        >
+          {{descProduct.isFull ? 'Full' : descProduct.isExpired ? 'Ended' : 'Buy Now'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- TAB BAR COMPONENT -->
+  <tab-bar current="index" bind:switch="onTabSwitch"></tab-bar>
+
+</view>

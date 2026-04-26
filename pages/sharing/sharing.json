@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/home/home",
+    "pages/travel/travel",
+    "pages/secondHand/secondHand",
+    "pages/createTravel/createTravel",
+    "pages/community/community",
+    "pages/house/house",
+    "pages/sharing/sharing",
+    "pages/profile/profile",
+    "pages/admin/admin",
+    "pages/support/support"
+  ],
+  "usingComponents": {
+    "tab-bar": "/components/tab-bar/tab-bar"
+  }
+}

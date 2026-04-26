@@ -1,0 +1,169 @@
+
+
+<view class="app-shell">
+  
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px">
+    <view class="nav-content">
+      <view class="brand">
+        <text class="brand-text">Community</text>
+        <view class="brand-dot"></view>
+      </view>
+      
+      <view class="hall-of-fame-mini" wx:if="{{champions.mostLiked.name}}">
+        <view class="mini-medal">
+          <text>🏆 {{champions.mostLiked.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view 
+    scroll-y 
+    class="feed-scroll" 
+    refresher-enabled="{{true}}" 
+    refresher-triggered="{{isRefreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onReachBottom"
+    enable-back-to-top>
+
+    <view class="creator-card">
+      <view class="creator-header">
+        <image class="my-ava" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+        <text class="my-name">What's on your mind, {{userInfo.nickName}}?</text>
+      </view>
+      
+      <textarea 
+        class="post-input" 
+        placeholder="Share your thoughts with the community..." 
+        placeholder-class="ph-style"
+        bindinput="onInputSync" 
+        value="{{draftText}}"
+        maxlength="1000"
+        auto-height />
+
+      <view class="image-preview-area" wx:if="{{tempImages.length > 0}}">
+        <view class="img-wrap" wx:for="{{tempImages}}" wx:key="*this">
+          <image src="{{item}}" mode="aspectFill"></image>
+          <view class="img-del" catchtap="removeTempImg" data-index="{{index}}">×</view>
+        </view>
+      </view>
+
+      <view class="creator-toolbar">
+        <view class="tool-btn" bindtap="onChooseImage">
+          <text class="tool-icon">🖼️</text>
+          <text>Photos</text>
+        </view>
+        <view class="spacer"></view>
+        <button 
+          class="submit-btn {{draftText.length > 0 || tempImages.length > 0 ? 'active' : ''}}" 
+          bindtap="publishPost">
+          Publish
+        </button>
+      </view>
+    </view>
+
+    <view class="posts-list">
+      <block wx:for="{{posts}}" wx:key="_id" wx:for-item="post" wx:for-index="pIdx">
+        
+        <view class="post-card {{post.author.isMonthlyWinner ? 'winner-glow' : ''}}">
+          
+          <view class="ribbon" wx:if="{{post.author.isMonthlyWinner}}">
+            <text>MONTHLY LEGEND</text>
+          </view>
+
+          <view class="u-info">
+            <view class="u-left">
+              <view class="ava-container">
+                <image class="u-ava" src="{{post.author.avatar}}" mode="aspectFill"></image>
+                <view class="online-dot" wx:if="{{post.author.isOnline}}"></view>
+              </view>
+              <view class="u-meta">
+                <text class="u-name {{post.author.isMonthlyWinner ? 'gold-name' : ''}}">{{post.author.name}}</text>
+                <text class="u-time">{{post.dateDisplay}}</text>
+              </view>
+            </view>
+            <view class="u-right">
+              <view class="dot-menu">•••</view>
+            </view>
+          </view>
+
+          <view class="post-body">
+            <text class="post-content-text" user-select>{{post.content}}</text>
+            
+            <view class="media-grid grid-{{post.images.length}}" wx:if="{{post.images.length > 0}}">
+              <image 
+                wx:for="{{post.images}}" 
+                wx:for-item="img" 
+                wx:key="*this" 
+                src="{{img}}" 
+                mode="aspectFill" 
+                lazy-load
+                catchtap="onImagePreview" 
+                data-urls="{{post.images}}" 
+                data-current="{{img}}"></image>
+            </view>
+          </view>
+
+          <view class="interact-row">
+            <view class="inter-item {{post.hasLiked ? 'liked' : ''}}" bindtap="toggleLike" data-index="{{pIdx}}">
+              <view class="icon-box">
+                <text class="i-icon">{{post.hasLiked ? '❤️' : '🤍'}}</text>
+              </view>
+              <text class="i-count">{{post.likeCount}}</text>
+            </view>
+            
+            <view class="inter-item" bindtap="initiateReply" data-postid="{{post._id}}" data-name="{{post.author.name}}">
+              <view class="icon-box">
+                <text class="i-icon">💬</text>
+              </view>
+              <text class="i-count">{{post.commentCount}}</text>
+            </view>
+          </view>
+
+          <view class="comment-preview" wx:if="{{post.comments.length > 0}}">
+            <view class="c-thread" wx:for="{{post.comments}}" wx:for-item="comment" wx:key="id">
+              <view class="c-main">
+                <text class="c-author">{{comment.authorName}}:</text>
+                <text class="c-body">{{comment.text}}</text>
+              </view>
+              
+              <view class="c-nested" wx:if="{{comment.replies.length > 0}}">
+                <view class="n-item" wx:for="{{comment.replies}}" wx:for-item="reply" wx:key="id">
+                  <text class="n-author">{{reply.authorName}}</text>
+                  <text class="n-body">{{reply.text}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+        </view>
+      </block>
+
+      <view class="bottom-state">
+        <view class="loader" wx:if="{{isLoadingMore}}"></view>
+        <text>{{isLoadingMore ? 'Updating Feed...' : '✨ End of the road'}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="modal-overlay {{showCommentModal ? 'active' : ''}}" bindtap="closeCommentModal">
+    <view class="modal-sheet" catchtap="preventBubble">
+      <view class="sheet-header">
+        <text class="sheet-title">Reply to {{replyTargetName}}</text>
+        <view class="close-btn" bindtap="closeCommentModal">×</view>
+      </view>
+      <view class="sheet-body">
+        <textarea 
+          class="sheet-input" 
+          placeholder="Write your response..." 
+          focus="{{modalFocus}}"
+          bindinput="onModalInput"
+          value="{{modalText}}" 
+          fixed="{{true}}"
+          adjust-position="{{true}}" />
+        <button class="sheet-pub {{modalText.length > 0 ? 'ready' : ''}}" bindtap="submitModalComment">Post Reply</button>
+      </view>
+    </view>
+  </view>
+  <tab-bar  />
+</view>

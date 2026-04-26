@@ -1,0 +1,105 @@
+<view class="create-page">
+  <!-- Header -->
+  <view class="page-header">
+    <text class="back-btn" bindtap="goBack">←</text>
+    <text class="page-title">Propose City to Travel</text>
+    <view class="placeholder"></view>
+  </view>
+
+  <view wx:if="{{!userInfo}}" class="login-section">
+    <text class="login-text">Please login to create a post</text>
+    <button class="login-btn" bindtap="getUserProfile">Login with WeChat</button>
+  </view>
+
+  <view wx:else class="user-info-section">
+    <image class="user-avatar-small" src="{{userInfo.avatarUrl}}" mode="aspectFill"/>
+    <text class="user-name-small">Posting as: {{userInfo.nickName}}</text>
+  </view>
+
+  <!-- Scrollable Content Area -->
+  <scroll-view 
+    scroll-y="true" 
+    class="scroll-area"
+    enhanced="{{true}}"
+    bounces="{{true}}"
+    show-scrollbar="{{false}}"
+    style="height: {{scrollAreaHeight}}px;">
+
+    <view class="form-container">
+      <!-- Province -->
+      <view class="form-group">
+        <text class="label">Province *</text>
+        <picker mode="selector" range="{{provinceList}}" bindchange="onProvincePick">
+          <view class="picker-box {{formData.province ? 'active' : ''}}">
+            <text>{{formData.province || 'Select province'}}</text>
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- City Selection -->
+      <view class="form-group" wx:if="{{formData.province}}">
+        <text class="label">City *</text>
+        <picker mode="selector" range="{{provinceCities}}" bindchange="onCityInProvincePick" wx:if="{{!showCityInput}}">
+          <view class="picker-box {{formData.city ? 'active' : ''}}">
+            <text>{{formData.city || 'Select city'}}</text>
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+
+        <!-- Custom City Input -->
+        <view wx:if="{{showCityInput}}" class="custom-city-wrapper">
+          <input 
+            class="text-input" 
+            placeholder="Enter city name" 
+            bindinput="onCustomCityInput" 
+            value="{{formData.city}}"/>
+        </view>
+
+        <!-- Toggle Button -->
+        <view class="city-toggle" bindtap="toggleCityInput">
+          <text class="toggle-text">{{showCityInput ? '← Back to city list' : '+ Can not find your city? Type it here'}}</text>
+        </view>
+      </view>
+
+      <!-- Note -->
+      <view class="form-group">
+        <text class="label">Description</text>
+        <textarea class="textarea-input" 
+                  placeholder="Why do you recommend this city?" 
+                  bindinput="onNoteInput" 
+                  value="{{formData.note}}"
+                  maxlength="500"
+                  auto-height="{{true}}"
+                  adjust-position="{{true}}"
+                  cursor-spacing="20"/>
+      </view>
+
+      <!-- Photos - FIXED: Use tempImagePaths for preview -->
+      <view class="form-group">
+        <text class="label">Photos ({{cloudImageIDs.length}}/{{maxImageCount}})</text>
+        <view class="photo-grid">
+          <!-- Add Button -->
+          <view class="photo-add" bindtap="chooseImage" wx:if="{{cloudImageIDs.length < maxImageCount}}">
+            <text class="add-icon">+</text>
+            <text class="add-text">Add</text>
+          </view>
+
+          <!-- Photo Preview - Use tempImagePaths for display -->
+          <view wx:for="{{tempImagePaths}}" wx:key="index" class="photo-item">
+            <image src="{{item}}" mode="aspectFill"/>
+            <view class="photo-delete" bindtap="deleteImage" data-index="{{index}}">×</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- Extra padding at bottom -->
+      <view style="height: 160rpx;"></view>
+    </view>
+  </scroll-view>
+
+  <!-- Footer -->
+  <view class="page-footer">
+    <button class="publish-btn" bindtap="publishPost">Publish Post</button>
+  </view>
+</view>

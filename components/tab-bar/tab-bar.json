@@ -1,0 +1,33 @@
+{
+    "pages": [
+      "pages/home/home",
+      "pages/travel/travel",
+      "pages/community/community",
+      "pages/house/house",
+      "pages/sharing/sharing",
+      "pages/secondHand/secondHand",
+      "pages/admin/admin",
+      "pages/profile/profile"
+    ],
+    "tabBar": {
+      "custom": true,
+      "color": "#7A7E83",
+      "selectedColor": "#3cc51f",
+      "borderStyle": "black",
+      "backgroundColor": "#ffffff",
+      "list": [
+        {
+          "pagePath": "pages/home/home",
+          "text": "Home"
+        },
+        {
+          "pagePath": "pages/admin/admin",
+          "text": "Admin"
+        },
+        {
+          "pagePath": "pages/profile/profile",
+          "text": "Profile"
+        }
+      ]
+    }
+  }

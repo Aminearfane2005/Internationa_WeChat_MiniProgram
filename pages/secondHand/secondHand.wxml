@@ -1,0 +1,126 @@
+
+
+<view class="nav-header">
+  <view class="header-top">
+    <text class="brand-name">2nd Hand Hub</text>
+    <view class="admin-badge" wx:if="{{isAdmin}}" bindtap="switchTab" data-tab="admin">ADMIN</view>
+  </view>
+  
+  <view class="search-bar">
+    <icon type="search" size="16" />
+    <input placeholder="Search items..." class="search-input" />
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{currentTab === 'shop' ? 'active' : ''}}" bindtap="switchTab" data-tab="shop">🛍️ Shop</view>
+    <view class="tab {{currentTab === 'sell' ? 'active' : ''}}" bindtap="switchTab" data-tab="sell">💰 Sell</view>
+  </view>
+
+  <scroll-view scroll-x class="category-bar" wx:if="{{currentTab === 'shop'}}">
+    <view class="cat-pill {{activeCat === 'All' ? 'active' : ''}}" bindtap="filterCat" data-cat="All">All</view>
+    <view class="cat-pill {{activeCat === item ? 'active' : ''}}" wx:for="{{categories}}" wx:key="*this" bindtap="filterCat" data-cat="{{item}}">{{item}}</view>
+  </scroll-view>
+</view>
+
+<view class="main-content">
+  <block wx:if="{{currentTab === 'shop'}}">
+    <scroll-view scroll-y class="scroll-area">
+      <view class="product-card {{item.status === 'completed' ? 'is-sold' : ''}}" wx:for="{{products}}" wx:key="_id" bindtap="{{item.status === 'completed' ? '' : 'openBuyModal'}}" data-item="{{item}}">
+        <view class="sold-stamp" wx:if="{{item.status === 'completed'}}">BOUGHT</view>
+        <image class="prod-img" src="{{item.image}}" mode="aspectFill" />
+        <view class="prod-info">
+          <text class="prod-title">{{item.title}}</text>
+          <text class="prod-cat">{{item.category}}</text>
+          <view class="price-row">
+            <text class="currency">¥</text>
+            <text class="price-val">{{item.price}}</text>
+          </view>
+          <button class="buy-button {{item.status === 'completed' ? 'btn-sold' : ''}}">
+            {{item.status === 'completed' ? 'SOLD OUT' : 'Buy Now'}}
+          </button>
+        </view>
+      </view>
+      <view class="tab-bar-spacer"></view>
+    </scroll-view>
+  </block>
+
+  <block wx:if="{{currentTab === 'sell'}}">
+    <scroll-view scroll-y class="scroll-area">
+      <view class="sell-form">
+        <text class="form-h1">Create Listing</text>
+        
+        <view class="input-group">
+          <text class="label">Product Photo <text class="req">*</text></text>
+          <view class="photo-upload" bindtap="chooseImage" data-type="product">
+            <image wx:if="{{form.image}}" src="{{form.image}}" mode="aspectFill" />
+            <text wx:else>+ Upload Photo</text>
+          </view>
+        </view>
+
+        <view class="input-group">
+          <text class="label">Category <text class="req">*</text></text>
+          <picker bindchange="onCatChange" range="{{categories}}">
+            <view class="picker-box">{{form.category || 'Select Category ▼'}}</view>
+          </picker>
+        </view>
+
+        <view class="input-group">
+          <text class="label">Item Title</text>
+          <input class="amz-input" placeholder="What are you selling?" bindinput="onIn" data-f="title" value="{{form.title}}" />
+        </view>
+
+        <view class="input-group">
+          <text class="label">Price (¥)</text>
+          <input class="amz-input" placeholder="0.00" type="digit" bindinput="onIn" data-f="price" value="{{form.price}}" />
+        </view>
+
+        <view class="payout-section">
+          <text class="label">Your Payout QR <text class="req">*</text></text>
+          <view class="photo-upload small" bindtap="chooseImage" data-type="qr">
+            <image wx:if="{{form.qr}}" src="{{form.qr}}" mode="aspectFill" />
+            <text wx:else>Upload QR</text>
+          </view>
+        </view>
+
+        <button class="orange-submit" bindtap="submitProduct">List Item</button>
+        <view class="tab-bar-spacer"></view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <block wx:if="{{currentTab === 'admin'}}">
+    <scroll-view scroll-y class="scroll-area">
+      <view class="admin-header-box">
+        <text class="form-h1">Pending Approvals</text>
+      </view>
+      <view wx:for="{{pendingOrders}}" wx:key="_id" class="order-card">
+        <text>Item: {{item.itemTitle}}</text>
+        <text>Buyer Phone: {{item.buyerPhone}}</text>
+        <text>Address: {{item.buyerAddress}}</text>
+        <button bindtap="handleAction" data-id="{{item._id}}" data-status="completed">Approve Sale</button>
+      </view>
+      <view wx:if="{{pendingOrders.length === 0}}" class="empty-msg">No pending tasks.</view>
+    </scroll-view>
+  </block>
+</view>
+
+<view class="modal-bg" wx:if="{{showPayModal}}" bindtap="closeModal">
+  <view class="modal-content" catchtap="true">
+    <text class="modal-title">Checkout</text>
+    <view class="summary">
+      <text>{{activeItem.title}} - ¥{{activeItem.price}}</text>
+    </view>
+    
+    <image class="qr-display" src="{{activeItem.sellerQR}}" show-menu-by-longpress />
+    <text class="tip">Long-press to save QR and pay the seller.</text>
+
+    <view class="buyer-info-fields">
+      <input class="amz-input" placeholder="Phone Number" bindinput="onIn" data-f="phone" value="{{form.phone}}" type="number" />
+      <input class="amz-input" placeholder="Full Address" bindinput="onIn" data-f="address" value="{{form.address}}" />
+    </view>
+
+    <button class="yellow-pay" bindtap="notifyPaid">I Have Paid</button>
+  </view>
+</view>
+
+<tab-bar/>

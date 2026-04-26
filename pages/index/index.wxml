@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="gradient-bg"></view>
+
+  <view class="content">
+    <view class="brand-row">
+      <text class="brand-dot"></text>
+      <text class="brand-name">iAbroad</text>
+    </view>
+
+    <view class="hero">
+      <text class="hero-title">Complete your profile</text>
+      <text class="hero-subtitle">A polished profile helps you get better matches, posts, and recommendations.</text>
+    </view>
+
+    <view class="card">
+      <view class="avatar-wrap">
+        <image class="avatar" src="{{avatar || defaultAvatar}}" mode="aspectFill" />
+        <view class="avatar-edit-badge">
+          <text class="avatar-edit-text">Edit</text>
+        </view>
+      </view>
+
+      <view class="avatar-actions">
+        <button class="btn btn-ghost" bindtap="chooseAvatar">Upload Photo</button>
+        <button class="btn btn-muted" bindtap="generateAvatar">Generate</button>
+      </view>
+
+      <view class="field">
+        <text class="field-label">WeChat ID</text>
+        <input
+          class="field-input"
+          placeholder="letters, numbers, underscore"
+          placeholder-class="placeholder"
+          value="{{wechatId}}"
+          bindinput="onWechatInput"
+          maxlength="30"
+        />
+        <text class="field-error {{wechatError ? 'show' : ''}}">{{wechatError}}</text>
+      </view>
+
+      <view class="field">
+        <text class="field-label">Display Name</text>
+        <input
+          class="field-input"
+          placeholder="how people will see your name"
+          placeholder-class="placeholder"
+          value="{{username}}"
+          bindinput="onUsernameInput"
+          maxlength="24"
+        />
+        <text class="field-error {{usernameError ? 'show' : ''}}">{{usernameError}}</text>
+      </view>
+
+      <button
+        class="btn btn-primary {{canSubmit && !isSubmitting ? '' : 'is-disabled'}}"
+        bindtap="onSubmit"
+        loading="{{isSubmitting}}"
+        disabled="{{isSubmitting || !canSubmit}}"
+      >
+        {{isSubmitting ? 'Saving profile...' : 'Continue'}}
+      </button>
+    </view>
+  </view>
+</view>
